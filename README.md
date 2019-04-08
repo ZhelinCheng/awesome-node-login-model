@@ -1,6 +1,6 @@
 # ✨ 网站模拟登录（Node.js）
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/ZhelinCheng/awesome-node-login-model.svg)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-%3E%3D3.0-green.svg)](https://www.typescriptlang.org/)
 ![GitHub](https://img.shields.io/github/license/ZhelinCheng/awesome-node-login-model.svg)
 
 生活中我经常需要用到爬虫，因为数据量不是太大，所以一直是自己手动登录。受到[awesome-python-login-model](https://github.com/CriseLYJ/awesome-python-login-model)项目的启发，
