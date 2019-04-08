@@ -4,5 +4,3 @@
  */
 
 'use strict'
-
-let test = 10;
