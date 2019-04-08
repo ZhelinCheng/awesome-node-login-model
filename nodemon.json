@@ -1,0 +1,16 @@
+{
+  "watch": [
+    "bin/*.js",
+    "src/**/*.js"
+  ],
+  "ignore": [
+    "**/*.test.js",
+    "**/*.spec.js",
+    ".git",
+    "node_modules"
+  ],
+  "exec": "node bin/index.js",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
