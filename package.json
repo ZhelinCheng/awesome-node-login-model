@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon",
-    "lint": "eslint ."
+    "lint": "eslint bin"
   },
   "repository": {
     "type": "git",
