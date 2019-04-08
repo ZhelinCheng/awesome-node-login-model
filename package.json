@@ -8,8 +8,13 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon",
-    "lint": "eslint bin"
+    "dev": "npm run watch-ts && npm run build-ts && nodemon",
+    "watch-node": "nodemon",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "tslint": "tslint -c tslint.json -p tsconfig.json",
+    "watch-ts": "tsc -w",
+    "build-ts": "tsc",
+    "build": "npm run build-ts && npm run tslint"
   },
   "repository": {
     "type": "git",
@@ -26,17 +31,14 @@
   },
   "homepage": "https://github.com/ZhelinCheng/awesome-node-login-model#readme",
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-node": "^8.0.1",
-    "eslint-plugin-promise": "^4.1.1",
-    "eslint-plugin-standard": "^4.0.0",
+    "concurrently": "^4.1.0",
     "nodemon": "^1.18.10"
   },
   "dependencies": {
     "puppeteer-core": "^1.14.0",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.7"
+    "request-promise-native": "^1.0.7",
+    "tslint": "^5.15.0",
+    "typescript": "^3.4.2"
   }
 }

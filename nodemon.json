@@ -1,15 +1,12 @@
 {
   "watch": [
-    "bin/*.js",
-    "src/**/*.js"
+    "dist/**/*.js"
   ],
   "ignore": [
-    "**/*.test.js",
-    "**/*.spec.js",
     ".git",
     "node_modules"
   ],
-  "exec": "node bin/index.js",
+  "exec": "node dist/index.js",
   "env": {
     "NODE_ENV": "development"
   }
