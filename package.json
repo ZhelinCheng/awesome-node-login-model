@@ -15,7 +15,7 @@
     "watch-ts": "tsc -w",
     "build-ts": "tsc",
     "debug": "npm run build && npm run watch-debug",
-    "build": "npm run build-ts && npm run tslint -s && echo Building success... && exit 0",
+    "build": "npm run build-ts && npm run tslint -s && echo Building success...",
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\"",
     "serve-debug": "nodemon --inspect dist/index.js"
   },
@@ -38,7 +38,11 @@
     "nodemon": "^1.18.10"
   },
   "dependencies": {
-    "puppeteer-core": "^1.14.0",
+    "@types/glob": "^7.1.1",
+    "@types/puppeteer": "^1.12.3",
+    "@types/request": "^2.48.1",
+    "@types/request-promise-native": "^1.0.15",
+    "puppeteer": "^1.14.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "tslint": "^5.15.0",
