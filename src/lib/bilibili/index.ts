@@ -54,7 +54,6 @@ class Bilibili extends SlidingVerificationCode {
     this.browser = await puppeteer.launch(options)
     const page = await this.browser.newPage()
     await page.goto(this.url)
-    await page.screenshot({path: 'example.png'})
     this.page = page
   }
 
@@ -137,7 +136,7 @@ class Bilibili extends SlidingVerificationCode {
         if (err) reject(err)
         console.log(data)
         if (data) {
-          resolve(data.diffBounds.left)
+          resolve(data.diffBounds.left + this.tolerance + 10)
         } else {
           resolve(null)
         }
@@ -145,33 +144,110 @@ class Bilibili extends SlidingVerificationCode {
     })
   }
 
+  async moveButton (button: any, track: number[], left: number): Promise<void> {
+    let {x, y} = await button.boundingBox()
+    await this.page.mouse.move(x + 15, y + 15);
+    await this.page.mouse.down()
+    await utils.timeout(0.6)
+    await this.page.mouse.move(x + left, 0, {steps: 60})
+    for (let i in track) {
+      await this.page.mouse.move(x + left + track[i], 0)
+      await utils.timeout(0.0005)
+    }
+
+    await utils.timeout(0.6)
+    await this.page.mouse.up()
+  }
+
+  /**
+   * 获取滑动轨迹列表
+   * @param distance {number} 缺块的x坐标
+   * @returns {Array}
+   */
+  getTrack (distance: number): number[] {
+    let track: number[] = []
+    let current = 0
+    let mid = distance * 2 / 3
+    let t = 0.2
+    let v = 0
+
+    distance += 10
+
+    while (current < distance) {
+      let a: number = 0
+      if (current < mid) {
+        a = utils.random(1, 3)
+      } else {
+        a = utils.random(3, 5)
+      }
+
+      let v0 = v
+      v = v0 + a * t
+
+      let move = v0 * t + 0.5 * a * t * t
+      current += move
+      track.push(move)
+      for (let i = 0; i < 2; i++) {
+        track.push(-utils.random(2, 3))
+      }
+
+      for (let i = 0; i < 2; i++) {
+        track.push(-utils.random(1, 4))
+      }
+    }
+
+    return track
+  }
+
+  /**
+   * 刷新验证码
+   */
+  async refreshCode (button: any): Promise<void> {
+    //gt_refresh_button
+
+    await button.hover()
+    let refresh: any = await this.page.$('.gt_refresh_button')
+    await utils.timeout(0.5)
+    return await refresh.click()
+  }
+
   /**
    * 启动
    */
   async crack(): Promise<void> {
     await this.createBrowser()
-    // await this.login()
+    await this.login()
     const button = await this.page.$('.gt_slider_knob.gt_show')
-    const captcha = await this.getGeetestImage(button)
-    // const captcha = ['./images/actual.png', './images/expected.png']
+    let maxCount = 0
 
-    let left: any = await this.getGap(captcha)
-    console.log(left)
+    while (maxCount < 3) {
+      const captcha = await this.getGeetestImage(button)
 
-    let {x, y} = await button.boundingBox()
+      let left: any = await this.getGap(captcha)
+      let track: number[] = this.getTrack(left)
 
-    console.log(x, y)
-    left += x + this.tolerance
-    left += 10
+      let info = await this.page.$('.gt_info_text')
+      let pass = ''
 
+      await this.moveButton(button, track, left)
+      await utils.timeout(3)
+      pass = await info.$eval('.gt_info_type', (node: any) => node.innerText)
+      maxCount++
+      if (pass.indexOf('失败') >= 0) {
+        console.log(`验证失败，3s后重新验证...`)
+        await utils.timeout(2)
+        await this.refreshCode(button)
+      } else {
+        console.log(`验证成功，准备获取Cookie...`)
+        maxCount = 3
+      }
+    }
 
+    // todo 此处还有错误
 
-    await this.page.mouse.move(x + 15, y + 15);
-    await this.page.mouse.down()
-    await this.page.mouse.move(30, y + 15, { steps: 50 })
-    await this.page.mouse.move(left - 30, y + 12, { steps: 40 })
-    await this.page.mouse.up()
-    console.log(left)
+    console.log(`程序许执行结束`)
+    await this.browser.close()
+    // await this.moveButton(button, track, left)
   }
 }
 

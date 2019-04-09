@@ -4,9 +4,11 @@
  */
 
 import timeout from './timeout'
+import random from './random'
 import dom from './dom'
 
 export {
   timeout,
+  random,
   dom
 }
