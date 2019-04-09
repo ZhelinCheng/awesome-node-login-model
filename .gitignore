@@ -71,4 +71,6 @@ typings/
 
 # Other
 package-lock.json
+yarn-lock.json
 dist
+images
