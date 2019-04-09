@@ -3,9 +3,10 @@
  * Features: index
  */
 
-import puppeteer from 'puppeteer'
-import SlidingVerificationCode from '../../_class/SlidingVerificationCode'
 import path from 'path'
+import puppeteer from 'puppeteer'
+import looksSame from 'looks-same'
+import SlidingVerificationCode from '../../_class/SlidingVerificationCode'
 import * as utils from '../../utils/index'
 
 interface AccountInterface {
@@ -17,6 +18,9 @@ class Bilibili extends SlidingVerificationCode {
   browser: any
   page: any
   url: string
+  // 公差
+  tolerance: number = 60
+  // 账号密码
   account: string | [AccountInterface]
   password: string = ''
 
@@ -81,6 +85,9 @@ class Bilibili extends SlidingVerificationCode {
     // 获取验证码图片宽高
     let {width, height} = await img.boxModel()
 
+    x += this.tolerance
+    width -= this.tolerance
+    height -= 20
     return [x, y, width, height]
   }
 
@@ -107,10 +114,11 @@ class Bilibili extends SlidingVerificationCode {
     // 点击滑块
     await button.click({
       button: 'middle',
-      delay: 1
+      delay: 0
     })
 
     // 裁剪缺口验证码图片
+    await utils.timeout(2)
     await this.page.screenshot({
       path: expected,
       clip: {x, y, width, height}
@@ -119,16 +127,51 @@ class Bilibili extends SlidingVerificationCode {
     return [actual, expected]
   }
 
+  getGap (captcha: string[]): Promise<number | null> {
+    return new Promise((resolve, reject) => {
+      let [img1, img2] = captcha
+      console.log(img1, img2)
+      looksSame(img1, img2, {
+        tolerance: 4.5
+      }, (err: any, data: any) => {
+        if (err) reject(err)
+        console.log(data)
+        if (data) {
+          resolve(data.diffBounds.left)
+        } else {
+          resolve(null)
+        }
+      })
+    })
+  }
+
   /**
    * 启动
    */
   async crack(): Promise<void> {
-    // await this.createBrowser()
+    await this.createBrowser()
     // await this.login()
+    const button = await this.page.$('.gt_slider_knob.gt_show')
+    const captcha = await this.getGeetestImage(button)
+    // const captcha = ['./images/actual.png', './images/expected.png']
 
-    // const button = await this.page.$('.gt_slider_knob.gt_show')
+    let left: any = await this.getGap(captcha)
+    console.log(left)
 
-    // const captcha = await this.getGeetestImage(button)
+    let {x, y} = await button.boundingBox()
+
+    console.log(x, y)
+    left += x + this.tolerance
+    left += 10
+
+
+
+    await this.page.mouse.move(x + 15, y + 15);
+    await this.page.mouse.down()
+    await this.page.mouse.move(30, y + 15, { steps: 50 })
+    await this.page.mouse.move(left - 30, y + 12, { steps: 40 })
+    await this.page.mouse.up()
+    console.log(left)
   }
 }
 
