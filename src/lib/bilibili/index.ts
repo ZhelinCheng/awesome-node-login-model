@@ -4,10 +4,14 @@
  */
 
 import path from 'path'
+import fs from 'fs'
 import puppeteer from 'puppeteer'
 import looksSame from 'looks-same'
-import Requests from '../../_class/Requests'
+import Requests from '../../base/Requests'
 import * as utils from '../../utils/index'
+
+
+const imagePath = path.resolve(__dirname, `./images`)
 
 
 interface AccountInterface {
@@ -16,7 +20,7 @@ interface AccountInterface {
 }
 
 
-class Bilibili extends Requests {
+export default class Bilibili extends Requests {
   browser: any
   page: any
   // 公差
@@ -24,16 +28,15 @@ class Bilibili extends Requests {
 
   /**
    * 初始化
-   * @param account {string|Array}
-   * @param password {string}
    */
-  constructor(account: string | [AccountInterface], password?: string) {
+  constructor() {
     super()
 
     // 配置基础数据
     this.url = 'https://passport.bilibili.com/login'
-    this.account = account
-    this.password = password || ''
+
+    // 创建图片目录
+    !fs.existsSync(imagePath) && fs.mkdirSync(imagePath)
   }
 
   /**
@@ -42,7 +45,7 @@ class Bilibili extends Requests {
   async createBrowser(): Promise<void> {
     // 配置浏览器选项
     const options = {
-      headless: process.env.NODE_ENV !== 'development',
+      headless: process.env.NODE_ENV === 'production',
       defaultViewport: {
         width: 1300,
         height: 640
@@ -78,14 +81,16 @@ class Bilibili extends Requests {
     await utils.timeout(0.5)
     const img = await this.page.$('.gt_box')
     // 获取验证码图片左顶点xy坐标
-    let {x, y} = await img.boundingBox()
+    const {x, y} = await img.boundingBox()
     // 获取验证码图片宽高
-    let {width, height} = await img.boxModel()
+    const {width, height} = await img.boxModel()
 
-    x += this.tolerance
-    width -= this.tolerance
-    height -= 20
-    return [x, y, width, height]
+    return [
+      x + this.tolerance,
+      y,
+      width - this.tolerance,
+      height - 20
+    ]
   }
 
   /**
@@ -95,12 +100,12 @@ class Bilibili extends Requests {
    * @param expected {string} 缺口验证码图片
    */
   async getGeetestImage(button: any, actual: string = 'actual.png', expected: string = 'expected.png'): Promise<string[]> {
-    let [x, y, width, height] = await this.getPosition(button)
+    const [x, y, width, height] = await this.getPosition(button)
 
     console.log(x, y, width, height)
 
-    actual = path.resolve(__dirname, `./images/${actual}`)
-    expected = path.resolve(__dirname, `./images/${expected}`)
+    actual = path.join(imagePath, `./${actual}`)
+    expected = path.join(imagePath, `./${expected}`)
 
     // 裁剪原始验证码图片
     await this.page.screenshot({
@@ -129,29 +134,29 @@ class Bilibili extends Requests {
    * @param captcha
    * @returns {Promise<number|null>} 返回缺口偏移
    */
-  getGap(captcha: string[]): Promise<number[] | null> {
+  getGap(captcha: string[]): Promise<number[] | undefined> {
     return new Promise((resolve, reject) => {
-      let [img1, img2] = captcha
+      const [img1, img2] = captcha
       console.log(img1, img2)
       looksSame(img1, img2, {
-        tolerance: 5
+        tolerance: 4.5
       }, (err: any, data: any) => {
         if (err) reject(err)
         console.log(data)
         if (data) {
-          let left = data.diffBounds.left
-          let right = data.diffBounds.right
+          const left = data.diffBounds.left
+          const right = data.diffBounds.right
 
-          resolve([left + this.tolerance, right - left])
+          resolve([left + this.tolerance + 10, right - left])
         } else {
-          resolve(null)
+          resolve(undefined)
         }
       })
     })
   }
 
   async moveButton(button: any, track: number[], left: number): Promise<void> {
-    let {x, y} = await button.boundingBox()
+    const {x, y} = await button.boundingBox()
     await this.page.mouse.move(x + 15, y + 15)
     await this.page.mouse.down()
     await utils.timeout(0.6)
@@ -199,9 +204,14 @@ class Bilibili extends Requests {
 
   /**
    * 启动
+   * @param account {string|Array}
+   * @param password {string}
    */
-  async crack(): Promise<void> {
-    if (!this.account && !this.password) {
+  async start(account: string | [AccountInterface], password?: string): Promise<void> {
+    this.account = account
+    this.password = password || ''
+
+    if (!this.account || !this.password) {
       return console.log('未指定账号密码')
     }
 
@@ -213,11 +223,11 @@ class Bilibili extends Requests {
       const captcha = await this.getGeetestImage(button)
 
       let [left, width] = await this.getGap(captcha)
-      let step = Math.floor(width / 3)
+      const step = Math.floor(width / 3)
 
-      let track: number[] = this.getTrack(left)
+      const track: number[] = this.getTrack(left)
 
-      let info = await this.page.$('.gt_info_text')
+      const info = await this.page.$('.gt_info_text')
       let pass = ''
 
       let maxCount = 0
@@ -242,9 +252,7 @@ class Bilibili extends Requests {
 
     // todo 此处还有错误
     console.log(`程序许执行结束`)
-    // await this.browser.close()
+    await this.browser.close()
     // await this.moveButton(button, track, left)
   }
 }
-
-export default Bilibili
