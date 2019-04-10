@@ -19,7 +19,6 @@ interface AccountInterface {
   readonly p: string
 }
 
-
 export default class Bilibili extends Requests {
   browser: any
   page: any
@@ -172,6 +171,7 @@ export default class Bilibili extends Requests {
     await utils.timeout(0.6)
     await this.page.mouse.up()
   }
+
   /**
    * 获取滑动抖动轨迹
    * @param distance {number} 缺块的x坐标
@@ -179,36 +179,16 @@ export default class Bilibili extends Requests {
    */
   getTrack(distance: number): number[] {
     let track: number[] = []
-    let current = 0
-    let mid = distance * 2 / 3
-    let t = 0.2
-    let v = 0
-
-    distance += 10
-
-    while (current < distance) {
-      let a: number = 0
-      if (current < mid) {
-        a = utils.random(1, 3)
+    let count = 0
+    while (count < 50) {
+      let val = utils.random(1, 5)
+      if (count % 2 === 0) {
+        track.push(-val)
       } else {
-        a = utils.random(3, 5)
+        track.push(val)
       }
-
-      let v0 = v
-      v = v0 + a * t
-
-      let move = v0 * t + 0.5 * a * t * t
-      current += move
-      track.push(move)
-      for (let i = 0; i < 2; i++) {
-        track.push(-utils.random(2, 3))
-      }
-
-      for (let i = 0; i < 2; i++) {
-        track.push(-utils.random(1, 4))
-      }
+      count++
     }
-
     return track
   }
 
@@ -222,56 +202,88 @@ export default class Bilibili extends Requests {
     return await refresh.click()
   }
 
+  async getImageBase(button: any): Promise<any> {
+    const captcha = await this.getGeetestImage(button)
+    let [left] = await this.getGap(captcha)
+
+    return left
+  }
+
   /**
    * 启动
    * @param account {string|Array}
    * @param password {string}
    */
-  async start(account: string | [AccountInterface], password?: string): Promise<void> {
+  async start(account: string | [AccountInterface], password?: string): Promise<object> {
     this.account = account
     this.password = password || ''
+    let cookies: any = ''
 
     if (!this.account || !this.password) {
-      return console.log('未指定账号密码')
+      console.log('未指定账号密码')
+      return {
+        account,
+        password,
+        cookies
+      }
     }
 
     try {
       await this.createBrowser()
+      // 等待滑动按钮出现
+      await this.page.waitForSelector('.gt_slider_knob.gt_show')
       await this.login()
       const button = await this.page.$('.gt_slider_knob.gt_show')
 
-      const captcha = await this.getGeetestImage(button)
-
-      let [left] = await this.getGap(captcha)
-
+      let left = await this.getImageBase(button)
       const track: number[] = this.getTrack(left)
-
-      const info = await this.page.$('.gt_info_text')
+      let info = await this.page.$('.gt_info_text')
       let pass = ''
 
       let maxCount = 0
       while (maxCount < 3) {
-        console.log(left)
         await this.moveButton(button, track, left)
         await utils.timeout(3)
         pass = await info.$eval('.gt_info_type', (node: any) => node.innerText)
         maxCount++
+
         if (pass.indexOf('失败') >= 0) {
-          left += 10
-          console.log(`验证失败，3s后进行第${maxCount}验证...`)
+          left += 6
+          console.log(`验证失败，3s后进行第${maxCount}次验证...`)
           await utils.timeout(1)
+        } else if (pass.indexOf('再来') >= 0) {
+          console.log('重新验证')
+          await utils.timeout(2)
+          left = await this.getImageBase(button)
+          maxCount = 0
         } else {
           console.log(`验证成功，准备获取Cookie...`)
           maxCount = 3
         }
       }
+
+      info = await this.page.$('#login-app li.remember .text')
+      info && (pass = await info.$eval('.tips', (node: any) => node.innerText))
+      if (info && pass.indexOf('错误') < 0) {
+        await this.page.waitForNavigation({
+          waitUntil: 'load'
+        })
+        cookies = await this.page.cookies()
+      } else {
+        console.info('账号或密码错误')
+      }
+
+      console.log(`程序许执行结束`)
+      await this.browser.close()
+      // await this.moveButton(button, track, left)
+      return {
+        account,
+        password,
+        cookies
+      }
+
     } catch (e) {
       console.error(e)
     }
-
-    // todo 此处还有错误
-    console.log(`程序许执行结束`)
-    await this.browser.close()
-    // await this.moveButton(button, track, left)
   }
 }

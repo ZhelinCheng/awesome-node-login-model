@@ -7,5 +7,9 @@ export {
 }
 
 if (require.main === module) {
-  // let w = new Bilibili()
+  (async function () {
+    let w = new Bilibili()
+    // let data: object = await w.start('13800138000', 'asdasd4565')
+    // console.log(data)
+  })()
 }
