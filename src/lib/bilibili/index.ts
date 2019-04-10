@@ -1,28 +1,26 @@
 /**
  * Created by ChengZheLin on 2019/4/9.
- * Features: index
+ * Features: Bilibili
  */
 
 import path from 'path'
 import puppeteer from 'puppeteer'
 import looksSame from 'looks-same'
-import SlidingVerificationCode from '../../_class/SlidingVerificationCode'
+import Requests from '../../_class/Requests'
 import * as utils from '../../utils/index'
 
+
 interface AccountInterface {
-  a: string,
-  p: string
+  readonly a: string,
+  readonly p: string
 }
 
-class Bilibili extends SlidingVerificationCode {
+
+class Bilibili extends Requests {
   browser: any
   page: any
-  url: string
   // 公差
   tolerance: number = 70
-  // 账号密码
-  account: string | [AccountInterface]
-  password: string = ''
 
   /**
    * 初始化
