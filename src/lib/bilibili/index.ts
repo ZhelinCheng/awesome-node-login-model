@@ -139,7 +139,7 @@ export default class Bilibili extends Requests {
       const [img1, img2] = captcha
       console.log(img1, img2)
       looksSame(img1, img2, {
-        tolerance: 4.5
+        tolerance: 12
       }, (err: any, data: any) => {
         if (err) reject(err)
         console.log(data)
@@ -147,7 +147,7 @@ export default class Bilibili extends Requests {
           const left = data.diffBounds.left
           const right = data.diffBounds.right
 
-          resolve([left + this.tolerance + 10, right - left])
+          resolve([left + this.tolerance, right - left])
         } else {
           resolve(undefined)
         }
@@ -179,16 +179,36 @@ export default class Bilibili extends Requests {
    */
   getTrack(distance: number): number[] {
     let track: number[] = []
-    let count = 0
-    while (count < 20) {
-      let val = utils.random(1, 5)
-      if (count % 2 === 0) {
-        track.push(-val)
+    let current = 0
+    let mid = distance * 2 / 3
+    let t = 0.2
+    let v = 0
+
+    distance += 10
+
+    while (current < distance) {
+      let a: number = 0
+      if (current < mid) {
+        a = utils.random(1, 3)
       } else {
-        track.push(val)
+        a = utils.random(3, 5)
       }
-      count++
+
+      let v0 = v
+      v = v0 + a * t
+
+      let move = v0 * t + 0.5 * a * t * t
+      current += move
+      track.push(move)
+      for (let i = 0; i < 2; i++) {
+        track.push(-utils.random(2, 3))
+      }
+
+      for (let i = 0; i < 2; i++) {
+        track.push(-utils.random(1, 4))
+      }
     }
+
     return track
   }
 
@@ -222,8 +242,7 @@ export default class Bilibili extends Requests {
 
       const captcha = await this.getGeetestImage(button)
 
-      let [left, width] = await this.getGap(captcha)
-      const step = Math.floor(width / 3)
+      let [left] = await this.getGap(captcha)
 
       const track: number[] = this.getTrack(left)
 
@@ -238,7 +257,7 @@ export default class Bilibili extends Requests {
         pass = await info.$eval('.gt_info_type', (node: any) => node.innerText)
         maxCount++
         if (pass.indexOf('失败') >= 0) {
-          left += step
+          left += 10
           console.log(`验证失败，3s后进行第${maxCount}验证...`)
           await utils.timeout(1)
         } else {

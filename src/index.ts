@@ -7,6 +7,5 @@ export {
 }
 
 if (require.main === module) {
-  // let w = new Weibo()
-  // w.crack()
+  // let w = new Bilibili()
 }
