@@ -24,9 +24,10 @@ npm run build
 
 ## 计划
 - [x] [Bilibili](https://www.bilibili.com/)
-- [ ] [微博网页版](http://weibo.com)
+- [x] [微博网页版](http://weibo.com)
 - [ ] [知乎](http://zhihu.com)
 - [ ] [Baidu](www.baidu.com)
 
 ## 目录
-- [x] [Bilibili](https://github.com/ZhelinCheng/awesome-node-login-model/tree/ts/src/lib/bilibili)
+- [x] [Bilibili模拟登录](https://github.com/ZhelinCheng/awesome-node-login-model/tree/master/src/lib/bilibili)
+- [x] [微博网页版模拟登录](https://github.com/ZhelinCheng/awesome-node-login-model/tree/master/src/lib/weibo)
