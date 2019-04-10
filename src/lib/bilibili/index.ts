@@ -19,7 +19,7 @@ class Bilibili extends SlidingVerificationCode {
   page: any
   url: string
   // 公差
-  tolerance: number = 60
+  tolerance: number = 70
   // 账号密码
   account: string | [AccountInterface]
   password: string = ''
@@ -78,7 +78,7 @@ class Bilibili extends SlidingVerificationCode {
     await button.hover()
     // 获取验证码图片位置
     await utils.timeout(0.5)
-    const img =  await this.page.$('.gt_box')
+    const img = await this.page.$('.gt_box')
     // 获取验证码图片左顶点xy坐标
     let {x, y} = await img.boundingBox()
     // 获取验证码图片宽高
@@ -117,7 +117,7 @@ class Bilibili extends SlidingVerificationCode {
     })
 
     // 裁剪缺口验证码图片
-    await utils.timeout(2)
+    await utils.timeout(3)
     await this.page.screenshot({
       path: expected,
       clip: {x, y, width, height}
@@ -126,17 +126,25 @@ class Bilibili extends SlidingVerificationCode {
     return [actual, expected]
   }
 
-  getGap (captcha: string[]): Promise<number | null> {
+  /**
+   * 获取缺口偏移
+   * @param captcha
+   * @returns {Promise<number|null>} 返回缺口偏移
+   */
+  getGap(captcha: string[]): Promise<number[] | null> {
     return new Promise((resolve, reject) => {
       let [img1, img2] = captcha
       console.log(img1, img2)
       looksSame(img1, img2, {
-        tolerance: 4.5
+        tolerance: 5
       }, (err: any, data: any) => {
         if (err) reject(err)
         console.log(data)
         if (data) {
-          resolve(data.diffBounds.left + this.tolerance + 10)
+          let left = data.diffBounds.left
+          let right = data.diffBounds.right
+
+          resolve([left + this.tolerance, right - left])
         } else {
           resolve(null)
         }
@@ -144,67 +152,47 @@ class Bilibili extends SlidingVerificationCode {
     })
   }
 
-  async moveButton (button: any, track: number[], left: number): Promise<void> {
+  async moveButton(button: any, track: number[], left: number): Promise<void> {
     let {x, y} = await button.boundingBox()
-    await this.page.mouse.move(x + 15, y + 15);
+    await this.page.mouse.move(x + 15, y + 15)
     await this.page.mouse.down()
     await utils.timeout(0.6)
     await this.page.mouse.move(x + left, 0, {steps: 60})
-    for (let i in track) {
-      await this.page.mouse.move(x + left + track[i], 0)
-      await utils.timeout(0.0005)
+
+    let count = 0
+    while (count < track.length) {
+      await this.page.mouse.move(x + left + track[count], 0)
+      await utils.timeout(0.01)
+      count++
     }
 
     await utils.timeout(0.6)
     await this.page.mouse.up()
   }
-
   /**
-   * 获取滑动轨迹列表
+   * 获取滑动抖动轨迹
    * @param distance {number} 缺块的x坐标
-   * @returns {Array}
+   * @returns {Array<number>}
    */
-  getTrack (distance: number): number[] {
+  getTrack(distance: number): number[] {
     let track: number[] = []
-    let current = 0
-    let mid = distance * 2 / 3
-    let t = 0.2
-    let v = 0
-
-    distance += 10
-
-    while (current < distance) {
-      let a: number = 0
-      if (current < mid) {
-        a = utils.random(1, 3)
+    let count = 0
+    while (count < 20) {
+      let val = utils.random(1, 5)
+      if (count % 2 === 0) {
+        track.push(-val)
       } else {
-        a = utils.random(3, 5)
+        track.push(val)
       }
-
-      let v0 = v
-      v = v0 + a * t
-
-      let move = v0 * t + 0.5 * a * t * t
-      current += move
-      track.push(move)
-      for (let i = 0; i < 2; i++) {
-        track.push(-utils.random(2, 3))
-      }
-
-      for (let i = 0; i < 2; i++) {
-        track.push(-utils.random(1, 4))
-      }
+      count++
     }
-
     return track
   }
 
   /**
    * 刷新验证码
    */
-  async refreshCode (button: any): Promise<void> {
-    //gt_refresh_button
-
+  async refreshCode(button: any): Promise<void> {
     await button.hover()
     let refresh: any = await this.page.$('.gt_refresh_button')
     await utils.timeout(0.5)
@@ -215,38 +203,48 @@ class Bilibili extends SlidingVerificationCode {
    * 启动
    */
   async crack(): Promise<void> {
-    await this.createBrowser()
-    await this.login()
-    const button = await this.page.$('.gt_slider_knob.gt_show')
-    let maxCount = 0
+    if (!this.account && !this.password) {
+      return console.log('未指定账号密码')
+    }
 
-    while (maxCount < 3) {
+    try {
+      await this.createBrowser()
+      await this.login()
+      const button = await this.page.$('.gt_slider_knob.gt_show')
+
       const captcha = await this.getGeetestImage(button)
 
-      let left: any = await this.getGap(captcha)
+      let [left, width] = await this.getGap(captcha)
+      let step = Math.floor(width / 3)
+
       let track: number[] = this.getTrack(left)
 
       let info = await this.page.$('.gt_info_text')
       let pass = ''
 
-      await this.moveButton(button, track, left)
-      await utils.timeout(3)
-      pass = await info.$eval('.gt_info_type', (node: any) => node.innerText)
-      maxCount++
-      if (pass.indexOf('失败') >= 0) {
-        console.log(`验证失败，3s后重新验证...`)
-        await utils.timeout(2)
-        await this.refreshCode(button)
-      } else {
-        console.log(`验证成功，准备获取Cookie...`)
-        maxCount = 3
+      let maxCount = 0
+      while (maxCount < 3) {
+        console.log(left)
+        await this.moveButton(button, track, left)
+        await utils.timeout(3)
+        pass = await info.$eval('.gt_info_type', (node: any) => node.innerText)
+        maxCount++
+        if (pass.indexOf('失败') >= 0) {
+          left += step
+          console.log(`验证失败，3s后进行第${maxCount}验证...`)
+          await utils.timeout(1)
+        } else {
+          console.log(`验证成功，准备获取Cookie...`)
+          maxCount = 3
+        }
       }
+    } catch (e) {
+      console.error(e)
     }
 
     // todo 此处还有错误
-
     console.log(`程序许执行结束`)
-    await this.browser.close()
+    // await this.browser.close()
     // await this.moveButton(button, track, left)
   }
 }

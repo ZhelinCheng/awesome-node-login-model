@@ -7,17 +7,12 @@
 生活中我经常需要用到爬虫，因为数据量不是太大，所以一直是自己手动登录。受到[awesome-python-login-model](https://github.com/CriseLYJ/awesome-python-login-model)项目的启发，
 我觉得有必要将我掌握的知识沉淀下来，所以我决定用Node去完成。不过项目刚创建，处于不停更新当中！
 
+## 关于
+模拟登录将采用直接登录或者Puppeteer（谷歌的无头浏览器）的方式进行，这将会根据网站登录的难易成度而定。
+
 ## 起步
 项目使用TypeScript编写，所以你需要对其有所了解。
-### 安装依赖
- ```shell
- npm i 
- ```
- or
- ```shell
- yarn install
- ```
- ### 开发
+### 开发
 ```shell
 npm run dev
 ```
@@ -26,10 +21,6 @@ npm run dev
 ```shell
 npm run build
 ```
- 
-
-## 关于
-模拟登录将采用直接登录或者Puppeteer（谷歌的无头浏览器）的方式进行，这将会根据网站登录的难易成度而定。
 
 ## 计划
 - [x] [Bilibili](https://www.bilibili.com/)
