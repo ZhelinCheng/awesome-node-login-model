@@ -1,13 +1,14 @@
 {
   "name": "awesome-node-login-model",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Website login model.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/index.js",
     "dev": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
     "watch-node": "nodemon",
+    "test": "jest --forceExit --coverage --verbose --detectOpenHandles",
+    "watch-test": "npm run test -- --watchAll",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "watch-ts": "tsc -w",
     "build-ts": "tsc",
@@ -31,8 +32,11 @@
   },
   "homepage": "https://github.com/ZhelinCheng/awesome-node-login-model#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.11",
     "concurrently": "^4.1.0",
-    "nodemon": "^1.18.10"
+    "jest": "^24.7.1",
+    "nodemon": "^1.18.10",
+    "ts-jest": "^24.0.2"
   },
   "dependencies": {
     "@types/glob": "^7.1.1",
