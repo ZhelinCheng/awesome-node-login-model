@@ -1,6 +1,6 @@
 import Bilibili from './lib/bilibili'
 import Weibo from './lib/weibo'
-import QQVideo from './lib/QQVideo'
+import QQVideo from './lib/qqvideo'
 
 export {
   Bilibili,
