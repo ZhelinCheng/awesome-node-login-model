@@ -179,16 +179,36 @@ export default class Bilibili extends Requests {
    */
   getTrack(distance: number): number[] {
     let track: number[] = []
-    let count = 0
-    while (count < 50) {
-      let val = utils.random(1, 5)
-      if (count % 2 === 0) {
-        track.push(-val)
+    let current = 0
+    let mid = distance * 2 / 3
+    let t = 0.2
+    let v = 0
+
+    distance += 10
+
+    while (current < distance) {
+      let a: number = 0
+      if (current < mid) {
+        a = utils.random(1, 3)
       } else {
-        track.push(val)
+        a = utils.random(3, 5)
       }
-      count++
+
+      let v0 = v
+      v = v0 + a * t
+
+      let move = v0 * t + 0.5 * a * t * t
+      current += move
+      track.push(move)
+      for (let i = 0; i < 2; i++) {
+        track.push(-utils.random(2, 3))
+      }
+
+      for (let i = 0; i < 2; i++) {
+        track.push(-utils.random(1, 4))
+      }
     }
+
     return track
   }
 
