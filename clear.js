@@ -25,7 +25,11 @@ const dist = path.resolve(__dirname, './dist')
           fs.unlinkSync(curPath)
         }
       })
-      fs.rmdirSync(path)
+      try{
+        fs.rmdirSync(path)
+      }catch(e) {
+        console.log(`error :${e}`)
+      }
     }
   }
 
