@@ -25,6 +25,7 @@ npm run build
 ## 计划
 - [x] [Bilibili](https://www.bilibili.com/)
 - [x] [微博网页版](http://weibo.com)
+- [ ] [腾讯视频](https://v.qq.com/)
 - [ ] [知乎](http://zhihu.com)
 - [ ] [Baidu](www.baidu.com)
 
