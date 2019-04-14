@@ -138,7 +138,7 @@ export default class Bilibili extends Requests {
       const [img1, img2] = captcha
       console.log(img1, img2)
       looksSame(img1, img2, {
-        tolerance: 12
+        tolerance: 12,
       }, (err: any, data: any) => {
         if (err) reject(err)
         console.log(data)
@@ -156,14 +156,15 @@ export default class Bilibili extends Requests {
 
   async moveButton(button: any, track: number[], left: number): Promise<void> {
     const {x, y} = await button.boundingBox()
+    const movePosition = x + left + 10
     await this.page.mouse.move(x + 15, y + 15)
     await this.page.mouse.down()
     await utils.timeout(0.6)
-    await this.page.mouse.move(x + left, 0, {steps: 60})
+    await this.page.mouse.move(movePosition, 0, {steps: 60})
 
     let count = 0
     while (count < track.length) {
-      await this.page.mouse.move(x + left + track[count], 0)
+      await this.page.mouse.move(movePosition + track[count], 0)
       await utils.timeout(0.01)
       count++
     }
