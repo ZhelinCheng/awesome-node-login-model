@@ -3,13 +3,14 @@ import Weibo from './lib/weibo'
 
 export {
   Bilibili,
-  Weibo
+  Weibo,
+
 }
 
 if (require.main === module) {
   (async function () {
     let w = new Bilibili()
-    // let data: object = await w.start('13800138000', 'asdasd4565')
-    // console.log(data)
+    let data: object = await w.start('13800138000', 'asdasd4565')
+    console.log(data)
   })()
 }
