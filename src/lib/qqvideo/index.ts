@@ -78,49 +78,73 @@ export default class QQVideo extends Requests {
   }
 
   /**
+   * 计算RGB之和
+   * @param arr
+   */
+  computeRgb(idx: number, arr: any): number {
+    let rgb: any = arr.slice(idx, idx + 4)
+    rgb = rgb[0] + rgb[1] + rgb[2]
+    return rgb
+  }
+
+  /**
    * 计算缺块偏移量
    * @param arr
    */
   computeOffset(arr: [any]): number {
     const len = arr.length
-    let result: any = {}
+    let result: any = []
+    let offset: number = 0
+    console.time('test')
 
-    // 循环所有像素点，并找出颜色趋于白色的位置
+    // 循环所有像素点，构建一个虚拟二维坐标系/多维数组
     for (let i = 0; i < len; i += 4) {
-      let rgb: any = arr.slice(i, i + 4)
-      rgb = rgb[0] + rgb[1] + rgb[2]
-
       let index = i / 4
       let x = index % this.imageWidth
+      let y = Math.floor(index / this.imageWidth)
 
-      if (rgb > 720) {
-        !result[x] && (result[x] = 0)
-        result[x]++
+      let rgb: any = this.computeRgb(i, arr)
+      if (!result[x]) {
+        result[x] = []
       }
+
+      result[x][y] = rgb
     }
 
-    // 筛选出符合条件的X轴
-    let pos: Array<number> = []
-    for (let i in result) {
-      let item = result[i]
-      if (item > 50) {
-        console.log(item)
-        pos.push(parseInt(i))
-      }
-    }
-    console.log(1, pos.length)
+    // 循环虚拟二维坐标，找到符合规则的区域
+    let i = 100;
+    while (i < 580) {
+      let col: number[] = result[i]
 
-    // 计算x轴差距，找出符合的x坐标
-    let offset: number = 0
-    for (let i = 1; i < pos.length; i++) {
-      let item = pos[i]
-      let diff: number = item - pos[i - 1]
-      if (diff > 80 && diff < 110) {
-        offset = pos[i - 1]
-        break;
-      }
-    }
+      let j = 0
+      while (j < 300) {
+        let item = col[j]
 
+        let colNext = result[i + 1]
+        let itemNext = colNext[j + 1]
+
+        // 当前位置正确，当前位置向下88像素正确
+        if (item > 700 && itemNext <= 700 && col[j + 88] > 700) {
+          col = result[i + 88]
+          item = col[j]
+
+          // 当前位置向右88像素正确
+          if (item > 700) {
+            col = result[i + 44]
+            item = col[j + 44]
+            if (item <= 700 && result[i][j] > 700) {
+              offset = i
+              i = j = 1000
+            }
+          }
+        }
+
+        j++
+      }
+
+      i++
+    }
+    console.timeEnd('test')
     return offset
   }
 
