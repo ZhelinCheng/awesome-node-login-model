@@ -95,7 +95,6 @@ export default class QQVideo extends Requests {
     const len = arr.length
     let result: any = []
     let offset: number = 0
-    console.time('test')
 
     // 循环所有像素点，构建一个虚拟二维坐标系/多维数组
     for (let i = 0; i < len; i += 4) {
@@ -114,31 +113,36 @@ export default class QQVideo extends Requests {
     // 循环虚拟二维坐标，找到符合规则的区域
     let i = 100;
     while (i < 580) {
-      let col: number[] = result[i]
+      if (offset > 100) {
+        break
+      }
 
+      let col: number[] = result[i]
       let j = 0
       while (j < 300) {
         let item = col[j]
+        // 向下三像素
+        let itemNext = col[j + 3]
 
-        let colNext = result[i + 1]
-        let itemNext = colNext[j + 1]
+        // 斜角像素
+        let colRight = result[i + 1]
+        let itemRight = colRight[j + 1]
 
-        // 当前位置正确，当前位置向下88像素正确
-        if (item > 700 && itemNext <= 700 && col[j + 88] > 700) {
+        // 当前位置正确，斜角正确，当前位置向下88像素正确
+        if (item > 700 && itemRight <= 700 && col[j + 88] > 700) {
           col = result[i + 88]
           item = col[j]
 
           // 当前位置向右88像素正确
-          if (item > 700) {
+          if (item > 700 && itemNext > 700) {
             col = result[i + 44]
             item = col[j + 44]
             if (item <= 700 && result[i][j] > 700) {
               offset = i
-              i = j = 1000
+              break;
             }
           }
         }
-
         j++
       }
 
@@ -259,7 +263,7 @@ export default class QQVideo extends Requests {
       await this.moveButton(button, track, offset)*/
 
 
-      let arr: any = await this.loadImage(path.resolve(imagePath, './1.jpg'))
+      let arr: any = await this.loadImage(path.resolve(imagePath, './2.jpg'))
       let offset: number = this.computeOffset(arr)
       console.log(offset)
     } catch (e) {
