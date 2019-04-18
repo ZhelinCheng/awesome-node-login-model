@@ -79,7 +79,7 @@ export default class QQVideo extends Requests {
 
   /**
    * 计算RGB之和
-   * @param arr
+   * @param arr 全部数据
    */
   computeRgb(idx: number, arr: any): number {
     let rgb: any = arr.slice(idx, idx + 4)
@@ -87,10 +87,19 @@ export default class QQVideo extends Requests {
     return rgb
   }
 
-  computeLine(x: number, y: number, arr: any): Boolean {
-    let maxX = x + 80
-
-    return true
+  /**
+   * 计算斜角的颜色是否正确
+   * @param x 坐标
+   * @param y 坐标
+   * @param arr 全部数据
+   */
+  computeBevel(x: number, y: number, arr: any): Boolean {
+    let isOk = true
+    for (let i = 1; i < 88; i++) {
+      let rgb = arr[x + i][y + i]
+      rgb > 700 && (isOk = false)
+    }
+    return isOk
   }
 
   /**
@@ -134,19 +143,10 @@ export default class QQVideo extends Requests {
           && result[x][y + 88] > base
           && result[x + 88][y + 88] > base
           && result[x + 44][y + 44] < black
+          && this.computeBevel(x, y, result)
         ) {
-          /*console.log(`
-          ${result[x][y]}
-          ${result[x + 8][y + 8]}
-          ${result[x + 88][y]}
-          ${result[x][y + 88]}
-          ${result[x + 88][y + 88]}
-          ${result[x + 44][y + 44]}
-          `)*/
-
-          let isOk = this.computeLine(x, y, result)
           console.log(x, y)
-          // offset = x
+          offset = x
         }
         y++
       }
@@ -266,9 +266,9 @@ export default class QQVideo extends Requests {
       const track: number[] = this.getTrack(offset - 30)
       await this.moveButton(button, track, offset)*/
 
-      let arr: any = await this.loadImage(path.resolve(imagePath, './4.jpg'))
+      /* let arr: any = await this.loadImage(path.resolve(imagePath, './3.jpg'))
       let offset: number = this.computeOffset(arr)
-      console.log(offset)
+      console.log(offset) */
     } catch (e) {
       console.error(e)
     }
