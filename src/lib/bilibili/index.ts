@@ -138,7 +138,7 @@ export default class Bilibili extends Requests {
       const [img1, img2] = captcha
       console.log(img1, img2)
       looksSame(img1, img2, {
-        tolerance: 12
+        tolerance: 12,
       }, (err: any, data: any) => {
         if (err) reject(err)
         console.log(data)
@@ -156,14 +156,15 @@ export default class Bilibili extends Requests {
 
   async moveButton(button: any, track: number[], left: number): Promise<void> {
     const {x, y} = await button.boundingBox()
+    const movePosition = x + left + 10
     await this.page.mouse.move(x + 15, y + 15)
     await this.page.mouse.down()
     await utils.timeout(0.6)
-    await this.page.mouse.move(x + left, 0, {steps: 60})
+    await this.page.mouse.move(movePosition, 0, {steps: 60})
 
     let count = 0
     while (count < track.length) {
-      await this.page.mouse.move(x + left + track[count], 0)
+      await this.page.mouse.move(movePosition + track[count], 0)
       await utils.timeout(0.01)
       count++
     }
@@ -260,10 +261,25 @@ export default class Bilibili extends Requests {
       let info = await this.page.$('.gt_info_text')
       let pass = ''
 
+
+      // 监听浏览器是否进行跳转
+      let isTargetChanged = false
       let maxCount = 0
+      this.browser.on('targetchanged', () => {
+        isTargetChanged = true
+        maxCount = 3
+        console.log(`验证成功，准备获取Cookie...`)
+      })
+
       while (maxCount < 3) {
         await this.moveButton(button, track, left)
         await utils.timeout(3)
+
+        // 如果进行了跳转，就停止
+        if (isTargetChanged) {
+          break
+        }
+
         pass = await info.$eval('.gt_info_type', (node: any) => node.innerText)
         maxCount++
 
@@ -282,15 +298,21 @@ export default class Bilibili extends Requests {
         }
       }
 
-      info = await this.page.$('#login-app li.remember .text')
-      info && (pass = await info.$eval('.tips', (node: any) => node.innerText))
-      if (info && pass.indexOf('错误') < 0) {
+      if (!isTargetChanged) {
+        info = await this.page.$('#login-app li.remember .text')
+        info && (pass = await info.$eval('.tips', (node: any) => node.innerText))
+        if (info && pass.indexOf('错误') < 0) {
+          console.info('未知错误')
+        } else {
+          console.info('账号或密码错误')
+        }
+      } else {
         await this.page.waitForNavigation({
           waitUntil: 'load'
         })
         cookies = await this.page.cookies()
-      } else {
-        console.info('账号或密码错误')
+        console.log(cookies)
+        this.cookies = cookies
       }
 
       console.log(`程序许执行结束`)
