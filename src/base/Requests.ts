@@ -39,7 +39,7 @@ export default class Requests {
       return cookie
     }
 
-    const rqUrl = Url.parse(url)
+    let rqUrl: any = url ? Url.parse(url) : {}
     // const time = new Date().getTime()
 
     for (let item of this.cookies) {
