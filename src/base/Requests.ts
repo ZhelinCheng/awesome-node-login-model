@@ -4,7 +4,7 @@
  */
 
 import rq from 'request-promise-native'
-
+import Url from 'url'
 
 interface AccountInterface {
   readonly a: string,
@@ -15,6 +15,7 @@ export default class Requests {
   url: string
   account: string | [AccountInterface]
   password: string = ''
+  cookies: Array<any> = []
 
   async rq(params: any) {
     return await rq({
@@ -26,5 +27,37 @@ export default class Requests {
       },
       ...params
     })
+  }
+
+  /**
+   * 获取Cookie字符串
+   * @param url 当前URL
+   */
+  getCookie (url?: string): string {
+    let cookie: string = ''
+    if (!this.cookies) {
+      return cookie
+    }
+
+    const rqUrl = Url.parse(url)
+    // const time = new Date().getTime()
+
+    for (let item of this.cookies) {
+      let t = item.domain.replace(/^\./, '')
+      t = t.replace(/\./g, '\\.')
+      let re = new RegExp(t)
+
+      if (
+        url
+        && !re.test(rqUrl.host)
+        && (item.path !== '/' && item.path !== rqUrl.path)
+      ) {
+        continue
+      }
+
+      cookie += `${item.name}=${item.value}; `
+    }
+
+    return cookie
   }
 }
