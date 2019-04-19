@@ -5,7 +5,7 @@
 
 import path from 'path'
 import fs from 'fs'
-import {createCanvas, loadImage} from 'canvas'
+import {createCanvas,loadImage} from 'canvas'
 import puppeteer from 'puppeteer'
 import Requests from '../../base/Requests'
 import * as utils from '../../utils/index'
