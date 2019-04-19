@@ -147,6 +147,7 @@ export default class QQVideo extends Requests {
           && this.computeBevel(x, y, result)
         ) {
           offset = x
+          break
         }
         y++
       }
