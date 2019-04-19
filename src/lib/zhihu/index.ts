@@ -28,7 +28,7 @@ export default class ZhiHu extends Requests {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
         }
         
-        let fromData = {
+        let fromData : any = {
             'client_id': 'c3cef7c66a1843f8b3a9e6a1e3160e20',
             'grant_type': 'password',
             'source': 'com.zhihu.web',
@@ -41,7 +41,7 @@ export default class ZhiHu extends Requests {
 
         let timestramp = new Date().getTime()
 
-        // fromData.timestramp = timestramp
+        fromData.timestramp = timestramp
 
 
         return await this.rq({
