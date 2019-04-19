@@ -21,9 +21,6 @@ export default class ZhiHu extends Requests {
         2.
          */
 
-
-        
-
         let headers = {
             'accept-encoding': 'gzip, deflate, br',
             'Host': 'www.zhihu.com',
