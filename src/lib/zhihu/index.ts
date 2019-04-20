@@ -34,6 +34,13 @@ export default class ZhiHu extends Requests {
         2.
      */
     async signIn(captchaLang = 'en',loadCookies = true) : Promise<void>{
+
+        // check user
+
+        // load cookie
+
+        // post
+
         let timestramp = new Date().getTime()
         this.loginData.lang = captchaLang
         this.loginData.timestramp = timestramp
@@ -51,6 +58,9 @@ export default class ZhiHu extends Requests {
             'x-zse-83': '3_1.1',
             'x-xsrftoken': this.getXsrf()
         }
+
+
+
         return await this.rq({
             method:'POST',
             headers:headers,
