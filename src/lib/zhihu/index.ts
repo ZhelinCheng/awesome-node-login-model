@@ -74,7 +74,7 @@ export default class ZhiHu extends Requests {
         return: str
      */
     getXsrf(){
-
+        
     }
 
     /**
@@ -94,6 +94,7 @@ export default class ZhiHu extends Requests {
         /**
         hmac 用法
         crypto.createHmac(‘sha1’, app_secret).update(args).digest().toString(‘base64’); 
+// tslint:disable-next-line: jsdoc-format
         这样的加密就是hmac-sha1的。之前是因为要加密的参数忘记排序的了。
          */
         let key = 'd1b964811afb40118a12068ff74a12f4'
