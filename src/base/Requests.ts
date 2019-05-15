@@ -6,16 +6,17 @@
 import rq from 'request-promise-native'
 import Url from 'url'
 
-interface AccountInterface {
-  readonly a: string,
-  readonly p: string
+interface StartInterface {
+  account: string
+  password: string
+  cookies: string | any[]
 }
 
-export default class Requests {
+export default abstract class Requests {
   url: string
-  account: string | [AccountInterface]
+  account: string
   password: string = ''
-  cookies: Array<any> = []
+  cookies: string | any[]
 
   async rq(params: any) {
     return await rq({
@@ -33,7 +34,7 @@ export default class Requests {
    * 获取Cookie字符串
    * @param url 当前URL
    */
-  getCookie (url?: string): string {
+  getCookie(url?: string): string {
     let cookie: string = ''
     if (!this.cookies) {
       return cookie
@@ -60,4 +61,7 @@ export default class Requests {
 
     return cookie
   }
+
+  abstract start(account: string, password: string): Promise<StartInterface>
 }
+

@@ -22,7 +22,7 @@ npm run build
 ```
 
 ## 计划
-- [x] [Bilibili](https://www.bilibili.com/)
+- [x] [Bilibili](https://www.bilibili.com/) B站验证码已修改，正在攻克
 - [x] [微博网页版](http://weibo.com)
 - [x] [腾讯视频](https://v.qq.com/)
 - [ ] [知乎](http://zhihu.com)

@@ -213,10 +213,10 @@ export default class QQVideo extends Requests {
    */
   async start(account: string, password: string) {
     this.account = account
-    this.password = password || ''
-    let cookies: any = ''
+    this.password = password
+    let cookies: any[] = []
 
-    if (!this.account || !this.password) {
+    if (!account || !password) {
       console.log('未指定账号密码')
       return {
         account,

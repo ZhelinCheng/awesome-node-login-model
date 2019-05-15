@@ -5,11 +5,6 @@
 import md5 from 'md5'
 import Requests from '../../base/Requests'
 
-interface AccountInterface {
-  readonly a: string,
-  readonly p: string
-}
-
 export default class Weibo extends Requests {
   constructor() {
     super()
@@ -18,18 +13,24 @@ export default class Weibo extends Requests {
     this.url = 'https://appblog.sina.com.cn/api/passport/v3_1/login.php'
   }
 
-  async start(account: string | [AccountInterface], password?: string): Promise<void> {
+  async start(account: string, password: string) {
     this.account = account
-    this.password = password || ''
+    this.password = password
+    let cookies: string = ''
 
-    if (!this.account || !this.password) {
-      return console.log('未指定账号密码')
+    if (!account || !password) {
+      console.log('未指定账号密码')
+      return {
+        account,
+        password,
+        cookies
+      }
     }
 
     const time = Math.floor(new Date().getTime() / 1000)
     const sign = time + '_' + md5(this.account + this.password + time)
 
-    return await this.rq({
+    cookies = await this.rq({
       method: 'post',
       formData: {
         'cookie_format': '1',
@@ -42,5 +43,11 @@ export default class Weibo extends Requests {
         'pwd': this.password
       }
     })
+
+    return {
+      account,
+      password,
+      cookies
+    }
   }
 }

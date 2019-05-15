@@ -10,14 +10,7 @@ import looksSame from 'looks-same'
 import Requests from '../../base/Requests'
 import * as utils from '../../utils/index'
 
-
 const imagePath = path.resolve(__dirname, `./images`)
-
-
-interface AccountInterface {
-  readonly a: string,
-  readonly p: string
-}
 
 export default class Bilibili extends Requests {
   browser: any
@@ -235,12 +228,12 @@ export default class Bilibili extends Requests {
    * @param account {string|Array}
    * @param password {string}
    */
-  async start(account: string | [AccountInterface], password?: string): Promise<object> {
+  async start(account: string, password: string) {
     this.account = account
-    this.password = password || ''
-    let cookies: any = ''
+    this.password = password
+    let cookies: any[] = []
 
-    if (!this.account || !this.password) {
+    if (!account || !password) {
       console.log('未指定账号密码')
       return {
         account,
