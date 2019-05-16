@@ -31,7 +31,7 @@ npm run build
 ## 目录
 - [x] [Bilibili模拟登录](https://github.com/ZhelinCheng/awesome-node-login-model/tree/master/src/lib/bilibili)
 - [x] [微博网页版模拟登录](https://github.com/ZhelinCheng/awesome-node-login-model/tree/master/src/lib/weibo)
-- [x] [腾讯视频模拟登录](https://github.com/ZhelinCheng/awesome-node-login-model/tree/master/src/lib/qqvideo)
+- [x] [腾讯视频模拟登录](https://github.com/ZhelinCheng/awesome-node-login-model/tree/master/src/lib/QQVideo)
 
 ## 同类项目
 - [awesome-python-login-model](https://github.com/CriseLYJ/awesome-python-login-model)：基于Python
